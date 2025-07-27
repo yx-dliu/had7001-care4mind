@@ -1,0 +1,8 @@
+# This is a .gitignore file for a project that includes Jupyter notebooks and Python scripts.
+# It specifies files and directories that should be ignored by Git.
+
+# === Project data ===
+## Ignore all data files
+*.pkl
+*.csv
+*.xlsx
