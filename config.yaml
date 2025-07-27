@@ -1,0 +1,53 @@
+data:
+  structured_path: '/Users/daisyliu/Projects/care4mind/master-df_05102025.parquet'
+  test_path: '/Users/daisyliu/Projects/care4mind/master-df_05102025_sample.parquet'
+
+icd9_groups:
+  NDD: ['299', '315', '317', '318', '319', '314', '307']
+  SCHIZ: ['295', '297', '298']
+  BPD: ['296']
+  MDD: ['311']
+  GAD: ['300', '313']
+  TSD: ['308', '309']
+  SWD: ['327', '347']
+  SD: ['302']
+  SUD: ['305', '303', '304', '291', '292']
+  PD: ['301']
+  NCD: ['294', '333', '331','366']
+
+reference:
+  chronic_conditions: '/Users/daisyliu/Projects/care4mind/chronic_icd9.csv'
+  physical_comorbidities: '/Users/daisyliu/Projects/care4mind/PhysComorb.xlsx'
+  physical_comorbidities_sheets: ['to_import']
+
+features:
+  - Sex_Bin
+  - Age_2015
+  - Num_Risks
+  - Total_Overall_Diagnoses
+  - Total_Encounters
+  - Lab_Risk_Proportion
+  - Num_Chronic
+  - Total_Medications
+  - Total_MedProcs
+  - Status_Active
+  - Status_Deceased
+  - Status_Inactive
+  - Status_Unknown
+  - Diabetes_Bin
+  - Essential hypertension_Bin
+  - COPD_Bin
+  - Viral hepatitis_Bin
+  - Chronic pain_Bin
+  - Rheumatoid arthritis_Bin
+  - Myocardial infarction_Bin
+  - Parkinsons disease_Bin
+  - Stroke_Bin
+  - Angina pectoris_Bin
+  - Liver disease_Bin
+  - Migraine_Bin
+  - Constipation_Bin
+  - Num_PhysComorb
+  - LongTermMeds_Num
+  - ShortTermMeds_Num
+  - HasMHD
