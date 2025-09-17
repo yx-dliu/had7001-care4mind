@@ -31,9 +31,6 @@ def combine_data(preprocessed_df: pd.DataFrame, unstructured_df: pd.DataFrame, o
     return combined_df
 
 def preprocess_combined_data(combined_df) -> dict:
-    """
-
-    """
     cleaned_df = clean_column_names(combined_df)
     X = cleaned_df.drop(columns = ['HasMHD'])
     y = cleaned_df['HasMHD']
