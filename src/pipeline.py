@@ -12,6 +12,9 @@ with open('config.yaml', 'r') as file:
     config = yaml.safe_load(file)
 
 def preprocess_data(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Pipeline for preprocessing structured data in preparation for combining with embeddings
+    """
     # Structured data processing
     processed_df = df.copy()
     processed_df.dropna(subset=['ICD-9'], inplace=True)
@@ -58,3 +61,13 @@ def preprocess_data(df: pd.DataFrame) -> pd.DataFrame:
     processed_df['Lab_Risk_Proportion'] = processed_df.apply(lambda row: proportion_abnormal(row['labs'], row['Sex']), axis=1)
 
     return processed_df
+
+def combine_data(preprocessed_df: pd.DataFrame, unstructured_df: pd.DataFrame, on = 'Patient_ID', how='inner') -> pd.DataFrame:
+    """
+    Pipeline for combining preprocessed dataframe with structured data with dataframe of embeddings.
+
+    Both dfs should have a 'Patient_ID' column on which to combine, otherwise need to specify
+    """
+    combined_df = pd.merge(preprocessed_df, unstructured_df, on = on, how = how)
+    
+    return combined_df

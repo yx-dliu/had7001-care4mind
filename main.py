@@ -1,8 +1,7 @@
 import pandas as pd
-import numpy as np
 import yaml
 
-from src.pipeline import preprocess_data
+from src.pipeline import preprocess_data, 
 
 with open('config.yaml', 'r') as file:
     config = yaml.safe_load(file)
@@ -16,14 +15,24 @@ df = preprocess_data(df)
 df = df[config['features']]
 
 # Combine structured and unstructured data
+embedding_sizes = ['pca_128', 'pca_256', 'pca_512']
+
+combined_dfs = {}
+for size in embedding_sizes:
+    combined_dfs[size] = 
+pca_128_path = config['data']['pca_128']
 
 # Hyperparameter tuning
 
+
 # Stratified k-fold cross-validation
+
 
 # Model training and evaluation
 
+
 # Statistical analyses
+
 
 if __name__ == '__main__':
     # Testing

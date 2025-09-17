@@ -1,6 +1,9 @@
 data:
   structured_path: '/Users/daisyliu/Projects/care4mind/master-df_05102025.parquet'
   test_path: '/Users/daisyliu/Projects/care4mind/master-df_05102025_sample.parquet'
+  pca_128: '/Users/daisyliu/Projects/care4mind/combined_isolated_pca_128.parquet'
+  pca_256: '/Users/daisyliu/Projects/care4mind/combined_isolated_pca_256.parquet'
+  pca_512: '/Users/daisyliu/Projects/care4mind/combined_isolated_pca_512.parquet'
 
 icd9_groups:
   NDD: ['299', '315', '317', '318', '319', '314', '307']
