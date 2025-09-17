@@ -1,7 +1,7 @@
 import pandas as pd
 import yaml
 
-from src.pipeline import preprocess_data, 
+from src.pipeline import preprocess_structured_data, preprocess_and_combine_data
 
 with open('config.yaml', 'r') as file:
     config = yaml.safe_load(file)
@@ -10,17 +10,12 @@ with open('config.yaml', 'r') as file:
 structured_path = config['data']['test_path']
 df = pd.read_parquet(structured_path)
 
-# Structured data processing
-df = preprocess_data(df)
+# Preprocessing structured data
+df = preprocess_structured_data(df)
 df = df[config['features']]
 
-# Combine structured and unstructured data
-embedding_sizes = ['pca_128', 'pca_256', 'pca_512']
-
-combined_dfs = {}
-for size in embedding_sizes:
-    combined_dfs[size] = 
-pca_128_path = config['data']['pca_128']
+# Combine and preprocess structured and unstructured data
+preprocessed_combined_data = preprocess_and_combine_data(df, config['embedding_sizes'])
 
 # Hyperparameter tuning
 

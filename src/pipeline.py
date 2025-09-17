@@ -11,7 +11,7 @@ import pandas as pd
 with open('config.yaml', 'r') as file:
     config = yaml.safe_load(file)
 
-def preprocess_data(df: pd.DataFrame) -> pd.DataFrame:
+def preprocess_structured_data(df: pd.DataFrame) -> pd.DataFrame:
     """
     Pipeline for preprocessing structured data in preparation for combining with embeddings
     """
@@ -62,12 +62,19 @@ def preprocess_data(df: pd.DataFrame) -> pd.DataFrame:
 
     return processed_df
 
-def combine_data(preprocessed_df: pd.DataFrame, unstructured_df: pd.DataFrame, on = 'Patient_ID', how='inner') -> pd.DataFrame:
+def preprocess_and_combine_data(structured_df: pd.DataFrame, embedding_sizes: list) -> dict:
     """
-    Pipeline for combining preprocessed dataframe with structured data with dataframe of embeddings.
+    Pipeline for applying preprocessing to combined data
+    """
 
-    Both dfs should have a 'Patient_ID' column on which to combine, otherwise need to specify
-    """
-    combined_df = pd.merge(preprocessed_df, unstructured_df, on = on, how = how)
-    
-    return combined_df
+    embedding_sizes = config['embedding_sizes']
+
+    combined_dfs = {}
+    for size in embedding_sizes:
+        combined_dfs[size] = combine_data(structured_df, pd.read_parquet(config['data'][size]))
+
+    preprocessed_combined_data = {}
+    for k, v in combined_dfs.items():
+        preprocessed_combined_data[k] = v
+
+    return preprocessed_combined_data
