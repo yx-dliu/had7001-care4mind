@@ -5,6 +5,8 @@ data:
   pca_256: '/Users/daisyliu/Projects/care4mind/combined_isolated_pca_256.parquet'
   pca_512: '/Users/daisyliu/Projects/care4mind/combined_isolated_pca_512.parquet'
 
+embedding_sizes: ['pca_128', 'pca_256', 'pca_512']
+
 icd9_groups:
   NDD: ['299', '315', '317', '318', '319', '314', '307']
   SCHIZ: ['295', '297', '298']
