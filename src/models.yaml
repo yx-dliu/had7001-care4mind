@@ -1,0 +1,66 @@
+untuned_models:
+  KNN:
+    class: KNeighborsClassifier
+    params:
+      weights: distance
+  LR:
+    class: LogisticRegression
+    params:
+      class_weight: balanced
+  RFC:
+    class: RandomForestClassifier
+    params: None
+  XGB:
+    class: GradientBoostingClassifier
+    params: None
+  ADA:
+    class: AdaBoostClassifier
+    params: None
+  LGB:
+    class: LGBMClassifier
+    params: None
+
+tuned_models:
+  KNN:
+    class: KNeighborsClassifier
+    params:
+      weights: distance
+      n_neighbors: 71
+      metric: minkowski
+  LR:
+    class: LogisticRegression
+    params:
+      class_weight: balanced
+      solver: newton-cholesky
+      C: 10
+  RFC:
+    class: RandomForestClassifier
+    params:
+      n_estimators: 300
+      min_samples_split: 2
+      max_features: sqrt
+      max_depth: 7
+      bootstrap: True
+  XGB:
+    class: GradientBoostingClassifier
+    params:
+      subsample: 1.0
+      min_samples_split: 10
+      max_features: 0.8
+      max_depth: 7
+      learning_rate: 1.0
+  ADA:
+    class: AdaBoostClassifier
+    params:
+      n_estimators: 300
+      learning_rate: 2.0
+  LGB:
+    class: LGBMClassifier
+    params:
+      reg_lambda: 5
+      num_leaves: 31
+      n_estimators: 300
+      min_child_samples: 40
+      max_depth: 5
+      learning_rate: 0.1
+      colsample_bytree: 0.6
