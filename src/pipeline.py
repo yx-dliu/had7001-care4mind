@@ -93,7 +93,7 @@ def load_models(tuned=True):
 def run_stratified_k_fold_cv(model, training_data, skf_n_splits, seed, 
                              label_col = None, id_col = None, shuffle = True, 
                              under_sample = True, impute = True, impute_max_iter = None,
-                             scale = True):
+                             scale = True, save_res = False, plot_names = None):
     """
     Runs stratified k-fold cross-validation for all models using the given X and y
 
@@ -125,7 +125,7 @@ def run_stratified_k_fold_cv(model, training_data, skf_n_splits, seed,
         }
 
         model_scores[f'fold{fold_idx+1}'] = run_and_evaluate_single_fold(
-            model, fold_idx, X_train_final, y_train_final, X_test_final, y_test_final)
+            model, fold_idx, X_train_final, y_train_final, X_test_final, y_test_final, save_res, plot_names)
 
     return model_scores, train_eval_final
 

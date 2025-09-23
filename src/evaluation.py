@@ -137,9 +137,9 @@ def evaluate_split(y_true, y_pred, y_prob, split_name, save_res=False, plot_name
 
     if save_res and plot_names is not None:
         save_path = f"{plot_names['roc_curve']}_{split_name}.png"
-        plot_roc_curve(fpr, tpr, roc_auc, save_res, save_path)
+        plot_roc_curve(fpr, tpr, roc_auc, f"{plot_names['roc_curve']}_{split_name}", save_res, save_path)
     else:
-        plot_roc_curve(fpr, tpr, roc_auc, save_res)
+        plot_roc_curve(fpr, tpr, roc_auc, f"{plot_names['roc_curve']}_{split_name}")
 
 def evaluate_model(model, X_train, y_train, X_test, y_test, save_res=False, plot_names=None):
     """

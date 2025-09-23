@@ -37,6 +37,11 @@ for embedding_size, embedding_size_data in combined_preprocessed_data.items():
     """
     for model_name, model in models_dict.items():
         print(f"Running stratified k-fold CV for {model_name}")
+
+        plot_names = {
+            'confusion_matrix': f'{model_name}_{embedding_size}_confusion_matrix',
+            'roc_curve': f'{model_name}_{embedding_size}_roc_curve'
+        }
         
         # run_stratified_k_fold_cv optionally returns processed training and test
         # data for each fold
@@ -47,7 +52,8 @@ for embedding_size, embedding_size_data in combined_preprocessed_data.items():
             seed = config['seed'], 
             label_col = config['label_col_name'], 
             id_col = config['id_col_name'],
-            impute_max_iter = config['impute_max_iter']
+            impute_max_iter = config['impute_max_iter'],
+            plot_names = plot_names
         )
 
         results_dict[model_name + "_" + embedding_size] = model_scores
