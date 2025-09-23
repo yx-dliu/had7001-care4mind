@@ -1,9 +1,16 @@
 data:
-  structured_path: '/Users/daisyliu/Projects/care4mind/master-df_05102025.parquet'
-  test_path: '/Users/daisyliu/Projects/care4mind/master-df_05102025_sample.parquet'
-  pca_128: '/Users/daisyliu/Projects/care4mind/combined_isolated_pca_128.parquet'
-  pca_256: '/Users/daisyliu/Projects/care4mind/combined_isolated_pca_256.parquet'
-  pca_512: '/Users/daisyliu/Projects/care4mind/combined_isolated_pca_512.parquet'
+  structured_path: 'master-df_05102025.parquet'
+  test_path: 'master-df_05102025_sample.parquet'
+  pca_128: 'combined_isolated_pca_128.parquet'
+  pca_256: 'combined_isolated_pca_256.parquet'
+  pca_512: 'combined_isolated_pca_512.parquet'
+
+id_col_name: 'Patient_ID'
+label_col_name: 'HasMHD'
+
+seed: 42
+skf_n_splits: 10
+impute_max_iter: 10
 
 embedding_sizes: ['pca_128', 'pca_256', 'pca_512']
 
@@ -21,11 +28,12 @@ icd9_groups:
   NCD: ['294', '333', '331','366']
 
 reference:
-  chronic_conditions: '/Users/daisyliu/Projects/care4mind/chronic_icd9.csv'
-  physical_comorbidities: '/Users/daisyliu/Projects/care4mind/PhysComorb.xlsx'
+  chronic_conditions: 'chronic_icd9.csv'
+  physical_comorbidities: 'PhysComorb.xlsx'
   physical_comorbidities_sheets: ['to_import']
 
 features:
+  - Patient_ID
   - Sex_Bin
   - Age_2015
   - Num_Risks
