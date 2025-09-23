@@ -1,9 +1,10 @@
 import pandas as pd
 from sklearn.preprocessing import MinMaxScaler
+from sklearn.experimental import enable_iterative_imputer
 from sklearn.impute import IterativeImputer
 from sklearn.model_selection import train_test_split
 
-from .utils import *
+from src.utils import *
 
 def impute_data(X_train, X_test, imputer=None):
     if imputer is None:
@@ -20,15 +21,22 @@ def scale_data(X_train, X_test, scaler=None):
     X_test_scaled = scaler.transform(X_test)
     return pd.DataFrame(X_train_scaled, columns=X_train.columns), pd.DataFrame(X_test_scaled, columns=X_test.columns)
 
-def combine_data(preprocessed_df: pd.DataFrame, unstructured_df: pd.DataFrame, on = 'Patient_ID', how='inner') -> pd.DataFrame:
+def combine_data(preprocessed_df: pd.DataFrame, unstructured_df: pd.DataFrame, on: str = 'Patient_ID', how: str = 'inner') -> pd.DataFrame:
     """
     Pipeline for combining preprocessed dataframe with structured data with dataframe of embeddings.
 
-    Both dfs should have a 'Patient_ID' column on which to combine, otherwise need to specify
+    Both dfs should have a 'Patient_ID' column on which to combine. If dtypes differ,
+    attempts to coerce both to string before merging.
     """
-    combined_df = pd.merge(preprocessed_df, unstructured_df, on = on, how = how)
-    
+    # Align dtypes
+    if preprocessed_df[on].dtype != unstructured_df[on].dtype:
+        # Coerce both to string to avoid merge errors
+        preprocessed_df[on] = preprocessed_df[on].astype(str)
+        unstructured_df[on] = unstructured_df[on].astype(str)
+
+    combined_df = pd.merge(preprocessed_df, unstructured_df, on=on, how=how)
     return combined_df
+
 
 def preprocess_combined_data(combined_df) -> dict:
     cleaned_df = clean_column_names(combined_df)

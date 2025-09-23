@@ -7,6 +7,7 @@ from .utils import *
 
 import yaml
 import pandas as pd
+from sklearn.model_selection import StratifiedKFold
 
 with open('config.yaml', 'r') as file:
     config = yaml.safe_load(file)
@@ -62,9 +63,11 @@ def preprocess_structured_data(df: pd.DataFrame) -> pd.DataFrame:
 
     return processed_df
 
-def preprocess_and_combine_data(structured_df: pd.DataFrame, embedding_sizes: list) -> dict:
+def combine_preprocessed_data(structured_df: pd.DataFrame, embedding_sizes: list) -> dict:
     """
-    Pipeline for applying preprocessing to combined data
+    Pipeline for applying preprocessing to combined data. 
+    
+    Returns dict of combined data by embedding size. No resampling, scaling etc. are done.
     """
 
     embedding_sizes = config['embedding_sizes']
@@ -73,8 +76,111 @@ def preprocess_and_combine_data(structured_df: pd.DataFrame, embedding_sizes: li
     for size in embedding_sizes:
         combined_dfs[size] = combine_data(structured_df, pd.read_parquet(config['data'][size]))
 
-    preprocessed_combined_data = {}
+    combined_preprocessed_data = {}
     for k, v in combined_dfs.items():
-        preprocessed_combined_data[k] = v
+        combined_preprocessed_data[k] = v
 
-    return preprocessed_combined_data
+    return combined_preprocessed_data
+
+def load_models(tuned=True):
+    """
+    Load models from config, does not include LGBMClassifier
+    """
+    model_dict = load_models_from_config(tuned=tuned)
+
+    return model_dict
+
+def run_stratified_k_fold_cv(model, training_data, skf_n_splits, seed, 
+                             label_col = None, id_col = None, shuffle = True, 
+                             under_sample = True, impute = True, impute_max_iter = None,
+                             scale = True):
+    """
+    Runs stratified k-fold cross-validation for all models using the given X and y
+
+    Need to resample, impute, and scale for each fold
+
+    Returns dict of scores for each fold of a given model
+    """
+    to_drop = []
+    skf = StratifiedKFold(n_splits=skf_n_splits, shuffle=shuffle, random_state=seed)
+
+    if label_col is not None:
+        to_drop.append(label_col)
+
+    if id_col is not None:
+        to_drop.append(id_col)
+
+    X = training_data.drop(to_drop, axis=1)
+    y = training_data[label_col]
+    model_scores = {}
+    
+    for fold_idx, (train_index, test_index) in enumerate(skf.split(X, y)):
+        X_train_final, X_test_final, y_train_final, y_test_final = process_stratified_k_fold_data(X, y, train_index, test_index, seed, under_sample, impute, impute_max_iter, scale)
+
+        train_eval_final = {
+            'X_train_final': X_train_final,
+            'X_test_final': X_test_final,
+            'y_train_final': y_train_final,
+            'y_test_final': y_test_final
+        }
+
+        model_scores[f'fold{fold_idx+1}'] = run_and_evaluate_single_fold(
+            model, fold_idx, X_train_final, y_train_final, X_test_final, y_test_final)
+
+    return model_scores, train_eval_final
+
+def run_and_evaluate_single_fold(model, fold_idx, X_train_final, y_train_final, X_test_final, y_test_final, save_res=False, plot_names=None) -> dict:
+    
+    """
+    Trains and evaluates a model on a single cross-validation fold.
+
+    Fits the model, generates predictions and probabilities, computes
+    accuracy, AUC, recall, precision, and F1 for both train and test sets,
+    and optionally saves plots.
+
+    Returns:
+        dict: Dictionary of evaluation metrics for train and test sets.
+    """
+    
+    print(f"Fold: {fold_idx+1}")
+    model.fit(X_train_final, y_train_final)
+
+    y_pred_train, y_pred_test, y_prob_train, y_prob_test = evaluate_model(
+        model, X_train_final, y_train_final, X_test_final, y_test_final,
+        save_res, plot_names
+        )
+
+    train_acc = accuracy_score(y_train_final, y_pred_train)
+    test_acc = accuracy_score(y_test_final, y_pred_test)
+
+    train_auc = roc_auc_score(y_train_final, y_prob_train)
+    test_auc = roc_auc_score(y_test_final, y_prob_test)
+
+    train_recall = recall_score(y_train_final, y_pred_train)
+    test_recall = recall_score(y_test_final, y_pred_test)
+
+    train_precision = precision_score(y_train_final, y_pred_train)
+    test_precision = precision_score(y_test_final, y_pred_test)
+
+    train_f1 = f1_score(y_train_final, y_pred_train)
+    test_f1 = f1_score(y_test_final, y_pred_test)
+
+    print(f'Train Accuracy: {train_acc}, Test Accuracy: {test_acc}')
+    print(f'Train AUC: {train_auc}, Test AUC: {test_auc}')
+    print(f'Train Recall: {train_recall}, Test Recall: {test_recall}')
+    print(f'Train Precision: {train_precision}, Test Precision: {test_precision}')
+
+    score_dict = {
+        'train_acc': train_acc,
+        'test_acc': test_acc,
+        'train_auc': train_auc,
+        'test_auc': test_auc,
+        'train_recall': train_recall,
+        'test_recall': test_recall,
+        'train_precision': train_precision,
+        'test_precision': test_precision,
+        'train_f1': train_f1,
+        'test_f1': test_f1
+        }
+
+    return score_dict

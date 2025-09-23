@@ -101,85 +101,79 @@ def plot_roc_curve(fpr, tpr, roc_auc, title = "ROC AUC Curve", save_res = False,
   plt.show()
   plt.close()
 
-def evaluate_model(model, X_train, y_train, X_test, y_test, save_res = False, plot_names = None):
-  """
-    Evaluates a binary classification model using training and test data.
+def evaluate_split(y_true, y_pred, y_prob, split_name, save_res=False, plot_names=None):
+    """
+    Evaluate model performance on a single dataset split.
 
-    This function computes and displays accuracy, confusion matrix, classification report,
-    and AUC-ROC for both training and test sets. It assumes the model has both
-    `predict()` and `predict_proba()` methods.
+    Computes confusion matrix, classification report, and ROC AUC,
+    prints metrics, and optionally saves confusion matrix and ROC curve plots.
 
     Parameters:
-        model: A fitted scikit-learn-style classification model.
-        X_train (array-like): Feature matrix for the training set.
-        y_train (array-like): True labels for the training set.
-        X_test (array-like): Feature matrix for the test set.
-        y_test (array-like): True labels for the test set.
+        y_true (array-like): True labels.
+        y_pred (array-like): Predicted class labels.
+        y_prob (array-like): Predicted probabilities for the positive class.
+        split_name (str): Name of the split ("train" or "test") for labeling.
+        save_res (bool): Whether to save plots.
+        plot_names (dict, optional): Base filenames for saved plots.
+
+    Returns:
+        None
+    """
+    conf_matrix, class_report, acc = get_scores(y_pred, y_true)
+
+    print(f"======== {split_name.capitalize()} Set ==========")
+    print_scores(conf_matrix, class_report)
+
+    # Confusion matrix
+    if save_res and plot_names is not None:
+        save_path = f"{plot_names['confusion_matrix']}_{split_name}.png"
+        plot_confusion_matrix(conf_matrix, save_res, save_path)
+    else:
+        plot_confusion_matrix(conf_matrix, save_res)
+
+    # ROC AUC
+    fpr, tpr, roc_auc = get_auc_values(y_prob, y_true)
+    print(f"{split_name.capitalize()} AUC: {roc_auc:.4f}")
+
+    if save_res and plot_names is not None:
+        save_path = f"{plot_names['roc_curve']}_{split_name}.png"
+        plot_roc_curve(fpr, tpr, roc_auc, save_res, save_path)
+    else:
+        plot_roc_curve(fpr, tpr, roc_auc, save_res)
+
+def evaluate_model(model, X_train, y_train, X_test, y_test, save_res=False, plot_names=None):
+    """
+    Evaluate a binary classification model on training and test sets.
+
+    Generates predictions and probabilities, prints accuracy, and calls
+    `evaluate_split` to compute confusion matrices, classification reports,
+    and ROC curves for both train and test data. Optionally saves plots.
+
+    Parameters:
+        model: Fitted scikit-learn style classifier with `predict` and `predict_proba`.
+        X_train (array-like): Training feature matrix.
+        y_train (array-like): True training labels.
+        X_test (array-like): Test feature matrix.
+        y_test (array-like): True test labels.
+        save_res (bool): Whether to save plots.
+        plot_names (dict, optional): Base filenames for saved plots.
 
     Returns:
         tuple:
-            - y_pred_train (array): Predicted class labels for the training set.
-            - y_pred_test (array): Predicted class labels for the test set.
-            - y_prob_train (array): Predicted probabilities for the positive class (training set).
-            - y_prob_test (array): Predicted probabilities for the positive class (test set).
-  """
-  y_pred_train = model.predict(X_train)
-  y_pred_test = model.predict(X_test)
-  y_prob_train = model.predict_proba(X_train)[:, 1]
-  y_prob_test = model.predict_proba(X_test)[:, 1]
+            y_pred_train (array): Predicted labels for training set.
+            y_pred_test (array): Predicted labels for test set.
+            y_prob_train (array): Predicted probabilities for the positive class (training set).
+            y_prob_test (array): Predicted probabilities for the positive class (test set).
+    """
+    y_pred_train = model.predict(X_train)
+    y_pred_test = model.predict(X_test)
+    y_prob_train = model.predict_proba(X_train)[:, 1]
+    y_prob_test = model.predict_proba(X_test)[:, 1]
 
-  print(f"Train accuracy score: {accuracy_score(y_train, y_pred_train)}")
-  print(f"Test accuracy score: {accuracy_score(y_test, y_pred_test)}")
-  print('\n')
+    print(f"Train accuracy score: {accuracy_score(y_train, y_pred_train)}")
+    print(f"Test accuracy score: {accuracy_score(y_test, y_pred_test)}\n")
 
-  # Calculate evaluation metrics and scores for the test and training sets
-  conf_matrix_train, class_report_train, acc_train = get_scores(y_pred_train, y_train)
-  conf_matrix_test, class_report_test, acc_test = get_scores(y_pred_test, y_test)
+    evaluate_split(y_train, y_pred_train, y_prob_train, "train", save_res, plot_names)
+    evaluate_split(y_test, y_pred_test, y_prob_test, "test", save_res, plot_names)
 
-  # Print scores and evaluation metrics for the training set
-  print("======== Training Set ==========")
-  print_scores(conf_matrix_train, class_report_train)
-
-  if save_res and plot_names is not None:
-    save_path = plot_names['confusion_matrix'] + "_train.png"
-    plot_confusion_matrix(conf_matrix_train, save_res, save_path) # plot the confusion matrix for the training set using the function we created above
-  elif save_res:
-    plot_confusion_matrix(conf_matrix_train, save_res)
-  else:
-    plot_confusion_matrix(conf_matrix_train)
-
-  fpr_train, tpr_train, roc_auc_train = get_auc_values(y_prob_train, y_train)
-  print(f"Training AUC: {roc_auc_train:.4f}")
-  plot_roc_curve(fpr_train, tpr_train, roc_auc_train, save_res, save_path)
-
-  if save_res and plot_names is not None:
-    save_path = plot_names['roc_curve'] + "_train.png"
-    plot_roc_curve(fpr_train, tpr_train, roc_auc_train, save_res, save_path)
-  elif save_res:
-    plot_roc_curve(fpr_train, tpr_train, roc_auc_train, save_res)
-  else:
-    plot_roc_curve(fpr_train, tpr_train, roc_auc_train)
-
-  # Print scores and evaluation metrics for the test set
-  print('======== Test Set ==========')
-  print_scores(conf_matrix_test, class_report_test)
-  if save_res and plot_names is not None:
-    save_path = plot_names['confusion_matrix'] + "_test.png"
-    plot_confusion_matrix(conf_matrix_test, save_res, save_path) # plot the confusion matrix for the training set using the function we created above
-  elif save_res:
-    plot_confusion_matrix(conf_matrix_test, save_res)
-  else:
-    plot_confusion_matrix(conf_matrix_test)
-
-  fpr_test, tpr_test, roc_auc_test = get_auc_values(y_prob_test, y_test)
-  print(f"Testing AUC: {roc_auc_test:.4f}")
-  
-  if save_res and plot_names is not None:
-    save_path = plot_names['roc_curve'] + "_test.png"
-    plot_roc_curve(fpr_test, tpr_test, roc_auc_test, save_res, save_path)
-  elif save_res:
-    plot_roc_curve(fpr_test, tpr_test, roc_auc_test, save_res)
-  else:
-    plot_roc_curve(fpr_test, tpr_test, roc_auc_test)
-
-  return y_pred_train, y_pred_test, y_prob_train, y_prob_test
+    return y_pred_train, y_pred_test, y_prob_train, y_prob_test
