@@ -11,7 +11,9 @@ from src.pipeline import (
     preprocess_structured_data,
     combine_preprocessed_data,
     load_models,
-    run_stratified_k_fold_cv)
+    load_lgbm,
+    run_stratified_k_fold_cv
+    )
 
 def main():
     """
@@ -21,13 +23,18 @@ def main():
     with open('config.yaml', 'r', encoding="utf-8") as file:
         config = yaml.safe_load(file)
 
+    with open('src/models.yaml', 'r', encoding="utf-8") as file:
+        models = yaml.safe_load(file)
+
     # Load data
     structured_path = config['data']['test_path']
+    print(f"Loading structured data from {structured_path}")
     df = pd.read_parquet(structured_path)
 
     # Preprocessing structured data
     df = preprocess_structured_data(df)
     df = df[config['features']]
+    df = df.loc[:,~df.columns.duplicated()].copy()
     print(list(df.columns))
 
     # Combine and preprocess structured and unstructured data
@@ -41,7 +48,6 @@ def main():
 
         # embedding_size follows the format pca_{embedding size}
         # embedding_size_data is a Pandas df with the associated training data
-        # STILL HAVE NOT ADDED CODE FOR RUNNING LGBM
 
         for model_name, model in models_dict.items():
             print(f"Running stratified k-fold CV for {model_name}")
@@ -53,7 +59,7 @@ def main():
 
             # run_stratified_k_fold_cv optionally returns processed training and test
             # data for each fold
-            model_scores, _ = run_stratified_k_fold_cv(
+            model_scores, train_eval_final = run_stratified_k_fold_cv(
                 model = model,
                 training_data = embedding_size_data,
                 skf_n_splits = config['skf_n_splits'],
@@ -68,6 +74,28 @@ def main():
 
             with open(f"{model_name}_{embedding_size}_results.json", "w", encoding="utf-8") as f:
                 json.dump(results_dict, f, indent = 4)
+        
+        LGB = load_lgbm(
+            y_train_final = train_eval_final['y_train_final'],
+            tuned = True,
+            tuned_params = models['tuned_models']['LGB']['params'],
+            handle_imbalance = True
+        )
+
+        model_scores, train_eval_final = run_stratified_k_fold_cv(
+            model = LGB,
+            training_data = embedding_size_data,
+            skf_n_splits = config['skf_n_splits'],
+            seed = config['seed'],
+            label_col = config['label_col_name'],
+            id_col = config['id_col_name'],
+            impute_max_iter = config['impute_max_iter'],
+            plot_names = plot_names
+        )
+        results_dict['LGB' + "_" + embedding_size] = model_scores
+        
+        with open(f"LGB_{embedding_size}_results.json", "w", encoding="utf-8") as f:
+            json.dump(results_dict, f, indent = 4)
 
     return results_dict
 
