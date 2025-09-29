@@ -286,7 +286,7 @@ def make_physcomorb_onehot(df: pd.DataFrame, physcomorb_sets: dict, suffix: str=
         pd.DataFrame: DataFrame with additional binary indicator columns.
     """
     for k, _ in physcomorb_sets.items():
-        df[k + suffix] = df['PhysComorb'].apply(lambda x: check_Bin(x, physcomorb_sets[k]))
+        df[k + suffix] = df['PhysComorb'].apply(lambda x: check_bin(x, physcomorb_sets[k]))
     return df
 
 def count_physcomorb(df: pd.DataFrame, col_name: str='PhysComorb', new_col_name: str='Num_PhysComorb') -> pd.DataFrame:
@@ -481,6 +481,21 @@ def check_fasting_glucose(test):
         return 0
 
 def check_egfr(test):
+    """
+    Categorizes an estimated glomerular filtration rate (eGFR) lab result into
+    kidney function stages.
+
+    Parameters:
+        test (dict): A dictionary containing at least the key "result",
+                     which stores the raw eGFR lab measurement.
+
+    Returns:
+        int or None:
+            - 0: Normal kidney function (eGFR ≥ 90).
+            - 1: Mildly decreased kidney function (60 ≤ eGFR < 90).
+            - 2: Moderately to severely decreased kidney function (eGFR < 60).
+            - None: Returned if the lab result could not be parsed or cleaned.
+    """
     result = clean_lab_value(test['result'])
     if result is None:
         return None
@@ -492,6 +507,21 @@ def check_egfr(test):
         return 2
 
 def check_glucose_tolerance(test):
+    """
+    Categorizes an oral glucose tolerance test (OGTT) result into diabetes
+    risk stages.
+
+    Parameters:
+        test (dict): A dictionary containing at least the key "result",
+                     which stores the raw glucose measurement (in mmol/L).
+
+    Returns:
+        int or None:
+            - 0: Normal glucose tolerance (OGTT < 7.8 mmol/L).
+            - 1: Impaired glucose tolerance (7.8 ≤ OGTT < 11.1 mmol/L).
+            - 2: Diabetes range (OGTT ≥ 11.1 mmol/L).
+            - None: Returned if the lab result could not be parsed or cleaned.
+    """
     result = clean_lab_value(test['result'])
     if result is None:
         return None
@@ -503,6 +533,20 @@ def check_glucose_tolerance(test):
         return 0
 
 def check_hba1c(test):
+    """
+    Categorizes a hemoglobin A1c (HbA1c) lab result into diabetes risk stages.
+
+    Parameters:
+        test (dict): A dictionary containing at least the key "result",
+                     which stores the raw HbA1c measurement (in %).
+
+    Returns:
+        int or None:
+            - 0: Normal HbA1c (< 6.0%).
+            - 1: Elevated / prediabetes range (6.0% ≤ HbA1c < 6.5%).
+            - 2: Diabetes range (HbA1c ≥ 6.5%).
+            - None: Returned if the lab result could not be parsed or cleaned.
+    """
     result = clean_lab_value(test['result'])
     if result is None:
         return None
@@ -514,6 +558,22 @@ def check_hba1c(test):
         return 0
 
 def check_hdl(test, sex):
+    """
+    Categorizes a high-density lipoprotein (HDL) cholesterol lab result into
+    normal or abnormal ranges, based on biological sex.
+
+    Parameters:
+        test (dict): A dictionary containing at least the key "result",
+                     which stores the raw HDL measurement (in mmol/L).
+        sex (str): The reported sex of the patient ("male" or "female").
+
+    Returns:
+        int or None:
+            - 0: Normal HDL level (≥ 1.0 mmol/L for males, ≥ 1.3 mmol/L for females).
+            - 2: Low HDL level (< 1.0 mmol/L for males, < 1.3 mmol/L for females).
+            - None: Returned if the lab result could not be parsed/cleaned or
+              if sex is missing/invalid.
+    """
     result = clean_lab_value(test['result'])
     if result is None or not isinstance(sex, str):
         return None
@@ -525,6 +585,21 @@ def check_hdl(test, sex):
         return None
 
 def check_inr(test):
+    """
+    Categorizes an international normalized ratio (INR) lab result into
+    clinical interpretation ranges.
+
+    Parameters:
+        test (dict): A dictionary containing at least the key "result",
+                     which stores the raw INR measurement.
+
+    Returns:
+        int or None:
+            - 0: Normal INR (≤ 1.1).
+            - 1: Therapeutic INR range (2.0–3.0).
+            - 2: Abnormal INR (outside the above ranges).
+            - None: Returned if the lab result could not be parsed or cleaned.
+    """
     result = clean_lab_value(test['result'])
     if result is None:
         return None
@@ -536,6 +611,21 @@ def check_inr(test):
         return 2
 
 def check_ldl(test):
+    """
+    Categorizes a low-density lipoprotein (LDL) cholesterol lab result into
+    cardiovascular risk ranges.
+
+    Parameters:
+        test (dict): A dictionary containing at least the key "result",
+                     which stores the raw LDL measurement (in mmol/L).
+
+    Returns:
+        int or None:
+            - 0: Optimal LDL (< 2.0 mmol/L).
+            - 1: Near optimal to borderline high LDL (2.0 ≤ LDL < 3.5 mmol/L).
+            - 2: High LDL (≥ 3.5 mmol/L).
+            - None: Returned if the lab result could not be parsed or cleaned.
+    """
     result = clean_lab_value(test['result'])
     if result is None:
         return None
@@ -547,6 +637,20 @@ def check_ldl(test):
         return 2
 
 def check_microalbumin(test):
+    """
+    Categorizes a urine microalbumin lab result into stages of albuminuria.
+
+    Parameters:
+        test (dict): A dictionary containing at least the key "result",
+                     which stores the raw microalbumin measurement (in mg/g).
+
+    Returns:
+        int or None:
+            - 0: Normal (< 30 mg/g).
+            - 1: Microalbuminuria (30–300 mg/g).
+            - 2: Macroalbuminuria (> 300 mg/g).
+            - None: Returned if the lab result could not be parsed or cleaned.
+    """
     result = clean_lab_value(test['result'])
     if result is None:
         return None
@@ -558,6 +662,20 @@ def check_microalbumin(test):
         return 2
 
 def check_total_cholesterol(test):
+    """
+    Categorizes a total cholesterol lab result into cardiovascular risk ranges.
+
+    Parameters:
+        test (dict): A dictionary containing at least the key "result",
+                     which stores the raw total cholesterol measurement (in mmol/L).
+
+    Returns:
+        int or None:
+            - 0: Desirable total cholesterol (< 5.2 mmol/L).
+            - 1: Borderline high cholesterol (5.2 ≤ total cholesterol < 6.2 mmol/L).
+            - 2: High cholesterol (≥ 6.2 mmol/L).
+            - None: Returned if the lab result could not be parsed or cleaned.
+    """
     result = clean_lab_value(test['result'])
     if result is None:
         return None
@@ -569,6 +687,20 @@ def check_total_cholesterol(test):
         return 2
 
 def check_triglycerides(test):
+    """
+    Categorizes a triglyceride lab result into cardiovascular risk ranges.
+
+    Parameters:
+        test (dict): A dictionary containing at least the key "result",
+                     which stores the raw triglyceride measurement (in mmol/L).
+
+    Returns:
+        int or None:
+            - 0: Normal triglycerides (< 1.7 mmol/L).
+            - 1: Borderline high triglycerides (1.7 ≤ triglycerides < 2.3 mmol/L).
+            - 2: High triglycerides (≥ 2.3 mmol/L).
+            - None: Returned if the lab result could not be parsed or cleaned.
+    """
     result = clean_lab_value(test['result'])
     if result is None:
         return None
@@ -580,6 +712,21 @@ def check_triglycerides(test):
         return 2
 
 def check_uacr(test):
+    """
+    Categorizes a urine albumin-to-creatinine ratio (UACR) lab result into
+    stages of albuminuria.
+
+    Parameters:
+        test (dict): A dictionary containing at least the key "result",
+                     which stores the raw UACR measurement (in mg/mmol).
+
+    Returns:
+        int or None:
+            - 0: Normal to mildly increased (< 3.0 mg/mmol).
+            - 1: Moderately increased (3.0–30.0 mg/mmol).
+            - 2: Severely increased (> 30.0 mg/mmol).
+            - None: Returned if the lab result could not be parsed or cleaned.
+    """
     result = clean_lab_value(test['result'])
     if result is None:
         return None
@@ -605,6 +752,29 @@ lab_result_functions = {
     }
 
 def check_lab_values(df: pd.DataFrame, labs_combined: dict, lab_result_functions: dict) -> pd.DataFrame:
+    """
+    Applies lab-specific classification functions to patient lab results and
+    merges the derived statuses back into the main DataFrame.
+
+    Parameters:
+        df (pd.DataFrame): The main patient-level DataFrame containing at least
+            a "Patient_ID" column to join on.
+        labs_combined (dict): A dictionary keyed by patient ID with values that
+            include:
+                - "sex" (str): Patient sex, required for HDL classification.
+                - "labs" (list[dict]): List of lab test dictionaries, each with
+                  at least a "test" (str) and "result".
+        lab_result_functions (dict): A mapping of normalized lab test names
+            (e.g., "HDL", "LDL") to checker functions that assign categorical
+            statuses.
+
+    Returns:
+        pd.DataFrame:
+            The input DataFrame merged with lab-derived statuses for each
+            patient. For HDL tests, sex-specific thresholds are applied.
+            For all other tests, thresholds from the corresponding checker
+            functions are applied.
+    """
     for pid, data in labs_combined.items():
         sex = data['sex']
         for lab in data['labs']:
@@ -631,8 +801,24 @@ def check_lab_values(df: pd.DataFrame, labs_combined: dict, lab_result_functions
 ### Functions to quantify risk
 def summarize_lab_risk(labs, sex):
     """
-    Produces raw count of all instances of abnormal 
-    lab values for given patient
+    Computes a cumulative risk score based on abnormal lab values
+    for a single patient.
+
+    Parameters:
+        labs (list[dict]): A list of lab test dictionaries, each containing
+            at least:
+                - "test" (str): The lab test name.
+                - "result": The raw lab measurement.
+        sex (str): Patient sex, required for sex-specific tests
+            (e.g., HDL).
+
+    Returns:
+        int:
+            A risk score equal to the sum of categorical lab statuses:
+                - 0: Normal.
+                - 1: Borderline or moderately abnormal.
+                - 2: High risk or abnormal.
+            None values are treated as 0 (ignored).
     """
     risk_score = 0
     for lab in labs:
@@ -652,8 +838,21 @@ def summarize_lab_risk(labs, sex):
 
 def proportion_abnormal(labs, sex):
     """
-    Calculates the proportion of abnormal lab values.
-    Returns None if no labs were available or evaluable.
+    Calculates the proportion of abnormal lab values for a single patient.
+
+    Parameters:
+        labs (list[dict]): A list of lab test dictionaries, each containing
+            at least:
+                - "test" (str): The lab test name.
+                - "result": The raw lab measurement.
+        sex (str): Patient sex, required for sex-specific tests
+            (e.g., HDL).
+
+    Returns:
+        float or None:
+            - A value between 0.0 and 1.0 representing the proportion of
+              evaluable labs that were flagged as abnormal (status ≥ 1).
+            - None if no labs were available or evaluable.
     """
     total = 0
     flagged = 0

@@ -60,16 +60,27 @@ def plot_confusion_matrix(conf_matrix, save_res = False, save_path = 'confusion_
   if save_res:
     plt.savefig(save_path, bbox_inches='tight')
 
-  plt.show()
-  plt.close()
+  # plt.show()
+  # plt.close()
 
 def get_auc_values(y_prob, y):
-  """
-  DOCSTRING
-  """
-  fpr, tpr, thresholds = roc_curve(y, y_prob)
-  roc_auc = roc_auc_score(y, y_prob)
-  return fpr, tpr, roc_auc
+    """
+    Computes the false positive rate (FPR), true positive rate (TPR), and
+    the Area Under the ROC Curve (AUC) for a binary classifier.
+
+    Parameters:
+        y_prob (array-like): Predicted probabilities for the positive class.
+        y (array-like): True binary class labels (0 or 1).
+
+    Returns:
+        tuple:
+            - fpr (array): False positive rates for different thresholds.
+            - tpr (array): True positive rates for different thresholds.
+            - roc_auc (float): Area Under the ROC Curve (AUC) score.
+    """
+    fpr, tpr, thresholds = roc_curve(y, y_prob)
+    roc_auc = roc_auc_score(y, y_prob)
+    return fpr, tpr, roc_auc
 
 def plot_roc_curve(fpr, tpr, roc_auc, title = "ROC AUC Curve", save_res = False, save_path = 'roc_curve.png'):
   """
@@ -98,8 +109,8 @@ def plot_roc_curve(fpr, tpr, roc_auc, title = "ROC AUC Curve", save_res = False,
   if save_res:
     plt.savefig(save_path, bbox_inches='tight')
 
-  plt.show()
-  plt.close()
+  # plt.show()
+  # plt.close()
 
 def evaluate_split(y_true, y_pred, y_prob, split_name, save_res=False, plot_names=None):
     """
